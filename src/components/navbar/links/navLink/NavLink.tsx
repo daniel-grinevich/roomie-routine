@@ -17,7 +17,7 @@ export default function NavLink({ item }: NavLinkProps) {
   return (
     <Link 
       href={item.path} 
-      className={pathName === item.path ? "text-blue-500 font-bold mx-4" : "text-white mx-4"}>
+      className={pathName === item.path ? "text-blue-500 font-bold mx-4" : "text-black mx-4"}>
       {item.name}
     </Link>
   );

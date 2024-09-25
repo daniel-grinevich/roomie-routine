@@ -1,43 +1,32 @@
-export default function HomePage() {
+import { routines, SelectRoutine } from '@/server/db/schema'; // Import your schema
+import { db } from '@/server/db/index'; // Import your database connection
+import RoutineCard from '@/components/routineCard/RoutineCard';
+import { calculateDayDifference } from '@/utils/dateUtils'
+import { Suspense } from 'react';
+
+async function getRoutines(): Promise<SelectRoutine[]> {
+  const res = await db.select().from(routines);
+  return res;
+}
+
+export default async function HomePage() {
+  const routineList = await getRoutines();
+
+  const routineListWithDaysLeft = routineList.map((routine) => {
+    const daysLeft = calculateDayDifference(routine.resetAt, new Date());
+    return { ...routine, daysLeft };
+  });
 
 
-  const fakeRoutines = [
-    { name: 'Clean under the stove', description: 'Clean the stove every day', frequency: 'Daily' },
-    { name: 'Organize the fridge', description: 'Clean the fridge every week', frequency: 'Weekly' },
-    { name: 'Vaccume the living room', description: 'Clean the kitchen every 2 weeks', frequency: 'Every 2 Weeks' },
-    { name: 'Clean the toilet', description: 'Clean the bathroom once a month', frequency: 'Once a Month' },
-  ]
   return (
-    <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2">
-      <div className="p-4 border-2 border-white">
-        <div id="title" className="mb-4">
-          <h1 className="text-5xl">Overdue</h1>
-        </div>
-        <div className="flex flex-row flex-wrap gap-4">
-          {fakeRoutines.map((routine) => (
-            <div className="w-[200px] p-4 border border-white">
-              <p>{routine.name}</p>
-            </div>
-          ))}
-        </div>
+    <div id="container" className="mx-auto max-w-7xl">
+      <div className="border border-black p-4">
+        <h1 className="text-5xl">Routines</h1>
       </div>
-
-      <div className="p-4 border-2 border-white">
-        <div id="title" className="mb-4">
-          <h1 className="text-5xl">Upcoming</h1>
-        </div>
-        <div className="flex flex-row flex-wrap gap-4">
-          
-          <div className="w-[200px] p-4 border border-white">
-            <p>Clean the stove</p>
-          </div>
-          <div className="w-[200px] p-4 border border-white">
-            <p>Clean the stove</p>
-          </div>
-          <div className="w-[200px] p-4 border border-white">
-            <p>Clean the stove</p>
-          </div>
-        </div>
+      <div id="mainContent" className="grid gap-4 my-4 grid-cols-[repeat(auto-fill,minmax(200px,1fr))]">
+        {routineListWithDaysLeft.map((routine) => (
+            <RoutineCard key={routine.id} routine={routine} daysLeft={routine.daysLeft} />
+        ))}
       </div>
     </div>
   );

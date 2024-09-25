@@ -4,6 +4,7 @@ export default function Links() {
     const links = [
         { name: 'Home', path: '/' },
         { name: 'Profile', path: '/profile' },
+        { name: 'Create Routine', path: '/routine/new' },
     ];
     const isUser = true;
     const isAdmin = true; // Assuming you may use this elsewhere
