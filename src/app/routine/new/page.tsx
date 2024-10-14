@@ -8,7 +8,7 @@ import { useState, useEffect } from "react";
 
 // This component is responsible for creating new routines. It uses SessionProvider to ensure
 // that RoutineForm has access to the current user's session information.
-export default function CreateRoutinePage({ children }: { children: React.ReactNode }) {
+export default function CreateRoutinePage() {
     const { data: session, status } = useSession();
 
     const [groups, setGroups] = useState(null);
