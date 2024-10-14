@@ -1,17 +1,34 @@
+// app/components/Navbar.tsx
+import { getServerAuthSession } from "@/server/auth";
 import Link from "next/link";
-import Image from "next/image"; // Don't forget to import Image
-import Links from "./links/Links";
+import Links from './links/Links'
 
+export default async function Navbar() {
+  const session = await getServerAuthSession();
 
-export default function Navbar() {
-    return (
-      <nav className="flex items-center h-[80px] flex-row gap-4 py-4">
-        <div id="logo" className="">
-            <h1>Roomie Routine</h1>
-        </div>
-        <div>
-            <Links/>
-        </div>
-      </nav>
-    );
-  }
+  return (
+    <nav className="flex items-center h-[80px] flex-row gap-4 py-4">
+      <div id="logo">
+        <h1>Roomie Routine</h1>
+      </div>
+      <div>
+        <Links />
+      </div>
+      <div className="flex-end flex flex-row gap-1">
+        {session ? (
+          // User is authenticated
+          <div className="flex flex-row gap-1">
+            <Link href="/api/auth/signout">
+              <button>Sign Out</button>
+            </Link>
+          </div>
+        ) : (
+          // User is not authenticated
+          <Link href="/api/auth/signin">
+            <button>Sign In</button>
+          </Link>
+        )}
+      </div>
+    </nav>
+  );
+}

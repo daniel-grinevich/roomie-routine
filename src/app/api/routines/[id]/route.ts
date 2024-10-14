@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { routines, SelectRoutine, users } from '@/db/schema';
+import { routines, SelectRoutine, users } from '@/server/db/schema';
 import { updateRoutine } from '@/server/db/queries/update';
 import { db } from '@/server/db';
 import { start } from 'repl';

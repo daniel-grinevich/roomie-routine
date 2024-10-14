@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import { nunito } from '@/app/ui/fonts';
 import "./globals.css";
-import Link from "next/link";
 import Navbar from "@/components/navbar/Navbar";
+import AuthProvider from "./AuthProvider";
+
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -15,12 +16,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className={`${nunito.className} antialiased mx-8`}>
-        <Navbar />
-        {children}
-      </body>
-    </html>
+    <AuthProvider>
+      <html lang="en">
+          <body className={`${nunito.className} antialiased mx-8`}>
+            <Navbar />
+            {children}
+          </body>
+      </html>
+    </AuthProvider>
   );
 }
 

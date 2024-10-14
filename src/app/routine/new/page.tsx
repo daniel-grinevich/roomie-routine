@@ -1,137 +1,66 @@
 "use client";
 
-import { useState } from "react";
+import RoutineForm from "@/components/routineForm/RoutineForm";
+import { useSession } from "next-auth/react"
+import { useState, useEffect } from "react";
 
-export default function CreateRoutinePage() {
-    const [formData, setFormData] = useState({
-        name: "",
-        description: "",
-        intervalValue: "",
-        intervalUnit: "days", // Default to 'days'
-    });
-    const [errorName, setErrorName] = useState("");
 
-    const validateName = (name: string) => {
-        if (!name) {
-            setErrorName("Name is required.");
-            return false;
-        }else if(name.length > 50) {
-            setErrorName("Name must be between 1 and 50 characters.");
-            return false;
-        }else if (!name.match(/^[a-zA-Z0-9]+$/)) {
-            setErrorName("Name can only contain letters and numbers.");
-            return false;
-        }
-        setErrorName("");
-        return true;
-    }
+
+// This component is responsible for creating new routines. It uses SessionProvider to ensure
+// that RoutineForm has access to the current user's session information.
+export default function CreateRoutinePage({ children }: { children: React.ReactNode }) {
+    const { data: session, status } = useSession();
+
+    const [groups, setGroups] = useState(null);
+    const [friends, setFriends] = useState(null);
+    const [isLoading, setLoading] = useState(true);
+
+    useEffect(() => {
+        if (!session) return; // Ensure session exists
     
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value,
-        });
-        if (e.target.name === "name") {
-            console.log("validate name");
-            validateName(e.target.value);
-        }
-
-    };
-
-    const handleSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-
-        try {
-            const response = await fetch("/api/routines", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(formData),
-            });
-
-            if (response.ok) {
-                alert("Routine created successfully!");
-                setFormData({
-                    name: "",
-                    description: "",
-                    intervalValue: "",
-                    intervalUnit: "days",
-                });
-                setErrorName("");
-            } else {
-                alert("Failed to create routine.");
+        const fetchData = async () => {
+          try {
+            // First API call to fetch groups
+            const resGroups = await fetch(`/api/users/${session.user.id}/groups`);
+            if (!resGroups.ok) {
+              throw new Error('Failed to fetch groups');
             }
-        } catch (error) {
-            console.error("Error creating routine:", error);
-        }
-    };
+            const dataGroups = await resGroups.json();
+            setGroups(dataGroups.groups);
+    
+            // Second API call to fetch friends
+            const resFriends = await fetch(`/api/users/${session.user.id}/friends`);
+            if (!resFriends.ok) {
+              throw new Error('Failed to fetch friends');
+            }
+            const dataFriends = await resFriends.json();
+            setFriends(dataFriends.friends);
+    
+            setLoading(false); // Set loading to false after both fetches
+          } catch (error) {
+            console.error('Error fetching data:', error);
+            setLoading(false);
+          }
+        };
+    
+        fetchData();
+      }, [session]);
 
-    return (
-        <div className="mx-auto relative flex flex-col justify-center items-center border border-black">
-            <div className="p-4">
-                <h1 className="text-3xl">Create Routine</h1>
+    if (status === 'unauthenticated') {
+        return <p>Must be signed in to access this page!</p>
+    } else {
+        return (
+            <div>
+                <div className="border border-black p-4">
+                    <h1 className="text-5xl">Create Routine</h1>
+                </div>
+                <div className="my-4 grid gap-4 grid-cols-[1fr,1fr]">
+                    {isLoading === false ? <RoutineForm groups={groups} friends={friends} user={session?.user.id} /> : <p>Loading</p>}
+                    <div>
+                        <h1>test</h1>
+                    </div>
+                </div>
             </div>
-            <form onSubmit={handleSubmit} className="flex flex-col gap-4 mt-4">
-                <div className="flex flex-col gap-2">
-                    <div className="flex flex-row gap-4 items-center">
-                        <label htmlFor="name">Name:</label>
-                        <input
-                            type="text"
-                            id="name"
-                            name="name"
-                            value={formData.name}
-                            onChange={handleChange}
-                            className="border border-black p-2"
-                            required
-                        />
-                    </div>
-                    <div className="h-[20px]">
-                        {errorName && <p className="text-red-500">{errorName}</p>}
-                    </div>
-                </div>
-
-                
-                
-                <div className="flex flex-row gap-4 items-center">
-                    <label htmlFor="description">Description:</label>
-                    <input
-                        type="text"
-                        id="description"
-                        name="description"
-                        value={formData.description}
-                        className="border border-black p-2"
-                        onChange={handleChange}
-                    />
-                </div>
-                <div className="flex flex-row gap-4 items-center">
-                    <label htmlFor="intervalValue">Frequency (e.g., 3):</label>
-                    <input
-                        type="number"
-                        id="intervalValue"
-                        name="intervalValue"
-                        value={formData.intervalValue}
-                        onChange={handleChange}
-                        className="border border-black p-2"
-                        required
-                    />
-                </div>
-                <div className="flex flex-row gap-4 items-center">
-                    <label htmlFor="intervalUnit">Interval Unit:</label>
-                    <select
-                        id="intervalUnit"
-                        name="intervalUnit"
-                        value={formData.intervalUnit}
-                        className="border border-black p-2"
-                        onChange={handleChange}
-                    >
-                        <option value="days">Days</option>
-                        <option value="weeks">Weeks</option>
-                        <option value="months">Months</option>
-                    </select>
-                </div>
-                <button className="text-white bg-black p-2 w-full"type="submit">Create</button>
-            </form>
-        </div>
-    );
+        );
+    }
 }

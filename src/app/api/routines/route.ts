@@ -1,9 +1,7 @@
-import { createRoutine } from '@/server/db/queries/insert';
 import { NextResponse } from 'next/server';
-import { getAllRoutines, getRoutineById } from '@/server/db/queries/select';
-import { routines, users } from '@/db/schema';
+import { getAllRoutines } from '@/server/db/queries/select';
+import { routines, users } from '@/server/db/schema';
 import { db } from '@/server/db';
-import { start } from 'repl';
 
 export async function POST(request: Request) {
   try {
@@ -32,17 +30,9 @@ export async function POST(request: Request) {
 }
 
 export async function GET(request: Request) {
-  const params = new URL(request.url).searchParams; 
-  const routineId = params.get('routineId');
-
   try {
-    if (routineId) {
-      const routine = await getRoutineById(parseInt(routineId)); // Fetch the routine with the given ID
-      return NextResponse.json(routine, { status: 200 }); // Return the routine as a JSON response
-    } else {
-      const routines = await getAllRoutines(); // Fetch all routines using the function
-      return NextResponse.json(routines, { status: 200 }); // Return the routines as a JSON response
-    }
+    const routines = await getAllRoutines(); // Fetch all routines using the function
+    return NextResponse.json(routines, { status: 200 }); // Return the routines as a JSON response
   } catch (error) {
     console.error('Error fetching routines:', error);
     return NextResponse.json({ error: 'Failed to fetch routines' }, { status: 500 });

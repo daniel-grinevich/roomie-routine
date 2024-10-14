@@ -63,7 +63,7 @@ export default function RoutineCard({ routine, daysLeft }: RoutineProp) {
         <button className="border text-sm border-black p-2" onClick={handleClick}>Completed!</button>
       </div>
       <div className="absolute top-0 right-0 mx-2 my-1 flex">
-      {days <= 1 ? (
+      {days <= 0 ? (
         <p>❗</p>
       ) : days <= 3 ? (
         <p>👀</p>
