@@ -17,7 +17,7 @@ export async function POST(request: Request) {
     }
 
     const friend: SelectUser = friends[0];
-    await createFriendRequest({ userId: userId, friendId: friend.id });
+    await createFriendRequest({ sender: userId, recipient: friend.id, status: 'pending' });
 
     return NextResponse.json({ message: `Friend request sent to ${friendName} (${friendEmail}) successfully!` });
 }
