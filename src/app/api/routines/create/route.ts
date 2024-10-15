@@ -1,4 +1,4 @@
-import { InsertRoutine, routines, SelectUser, users } from "@/server/db/schema";
+import { InsertRoutine, routines, SelectUser, users, groupsToRoutines} from "@/server/db/schema";
 import { NextResponse } from "next/server";
 import { db } from "@/server/db";
 import { getUsersFriendsList } from "@/server/db/queries/select";
@@ -7,7 +7,9 @@ import { getUsersFriendsList } from "@/server/db/queries/select";
 
 export async function POST(request: Request) {
     try {
+        console.log("CREATING ROUTINE");
         const data = await request.json();
+        console.log("DATA: ", data);
 
         // Get the start of the current day
         let startOfDay = new Date();
@@ -54,7 +56,13 @@ export async function POST(request: Request) {
             }
         }
 
-        await db.insert(routines).values(data);  
+        const newRoutine = await db.insert(routines).values(data).returning();  
+        if (data.groupId) {
+            await db.insert(groupsToRoutines).values({
+                groupId: data.groupId,
+                routineId: newRoutine[0].id,
+            });
+        }
         return NextResponse.json({ status: 200});
     } catch (error) {
         console.error('Error creating routine:', error);

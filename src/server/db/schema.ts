@@ -1,16 +1,25 @@
-import { integer, pgTable, serial, text, timestamp, pgEnum, varchar, pgTableCreator, index, primaryKey, foreignKey } from 'drizzle-orm/pg-core';  
+import { integer, pgTable, serial, text, timestamp, pgEnum, varchar, pgTableCreator, index, primaryKey, foreignKey, customType } from 'drizzle-orm/pg-core';  
 import { relations, sql } from "drizzle-orm";
 import { type AdapterAccount } from "next-auth/adapters";
-
-
 
 const intervalUnitEnum = pgEnum('interval_unit', ['days', 'weeks', 'months']);
 const requestStatusEnum = pgEnum('request_status', ['pending', 'rejected', 'timeout', 'accepted']);
 const friendshipStatusEnum = pgEnum('friendship_status', ['active', 'blocked', 'inactive']);
 
+const hexType = customType<{ data: string }>({
+  dataType() {
+  return 'char(6)';
+  },
+  toDriver(value: string): string {
+  // Ensure the value is a valid hex color (6 characters, 0-9 and A-F)
+  if (!/^[0-9A-F]{6}$/i.test(value)) {
+    throw new Error('Invalid hex color');
+  }
+  return value.toUpperCase();
+  },
+ });
 
 export const createTable = pgTableCreator((name) => `roomie_${name}`);
-
 
 
 export const routines = createTable('routine', {
@@ -39,6 +48,7 @@ export const routineGroups = createTable('routine_groups', {
   name: varchar('name').notNull(),
   createdBy: varchar('created_by')
   .references(() => users.id, {onDelete: 'cascade'} ).notNull(),
+  color: hexType('color'),
 });
 
 // Junction table for many-to-many relationship between routines and groups

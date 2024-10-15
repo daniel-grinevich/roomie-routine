@@ -1,7 +1,8 @@
 
 import { asc, between, count, eq, and,or, getTableColumns, sql } from 'drizzle-orm';
 import { db } from '../index';
-import { SelectRoutine, routines, users, SelectUser, SelectGroup, routineGroups, groupUsers, friendships, friendRequests} from '../schema';
+import { SelectRoutine, routines, users, SelectUser, SelectGroup, routineGroups, groupUsers, friendships, friendRequests, SelectFriendRequest, groupsToRoutines} from '../schema';
+import { NextResponse } from 'next/server';
 
 
 export async function getAllRoutines(): Promise<SelectRoutine[]> {
@@ -21,7 +22,35 @@ export async function getRoutinesByUser(userId:string): Promise<SelectRoutine[]>
     const result = await db.select().from(routines).where(eq(routines.createdBy, userId));
     return result;
   } catch (error) {
-    console.error('Error fetching routines:', error);
+    console.error('Error fetching routines by user: ', error);
+    throw error;
+  }
+}
+
+export async function getRoutinesByGroup(groupId:number, groupName:string): Promise<SelectRoutine[]> {
+  try {
+    const result = await db
+      .select({
+        id: routines.id,
+        name: routines.name,
+        description: routines.description,
+        intervalValue: routines.intervalValue,
+        intervalUnit: routines.intervalUnit,
+        createdAt: routines.createdAt,
+        resetAt: routines.resetAt,
+        lastToDoIt: routines.lastToDoIt,
+        assignedTo: routines.assignedTo,
+        createdBy: routines.createdBy,
+      })
+      .from(routineGroups)
+      .innerJoin(groupsToRoutines, eq(groupsToRoutines.groupId, routineGroups.id))
+      .innerJoin(routines, eq(groupsToRoutines.routineId, routines.id))
+      .where(and(eq(routineGroups.id, groupId), eq(routineGroups.name, groupName)));
+
+      return result;
+
+  } catch (error) {
+    console.error('Error fetching routines by group: ', error);
     throw error;
   }
 }
@@ -93,26 +122,13 @@ export async function getUserGroups(userId: string): Promise<SelectGroup[]> {
   }
 }
 
-export async function getUsersPendingFriendRequests(userId: string): Promise<SelectUser[]> {
-  let res: Array<SelectUser> = [];
+export async function getUsersPendingFriendRequests(userId: string): Promise<SelectFriendRequest[]> {
+  let res: Array<SelectFriendRequest> = [];
 
   try {
     res = await db
-      .select({
-        id: users.id,
-        name: users.name,
-        email: users.email,
-        emailVerified: users.emailVerified,
-        image: users.image,
-      })
+      .select()
       .from(friendRequests)
-      .innerJoin(
-        users,
-        or(
-          and(eq(friendRequests.sender, userId), eq(users.id, friendRequests.recipient)),
-          and(eq(friendRequests.recipient, userId), eq(users.id, friendRequests.sender))
-        )
-      )
       .where(
         and(
           eq(friendRequests.status, 'pending'),

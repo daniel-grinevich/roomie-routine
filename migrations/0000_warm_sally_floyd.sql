@@ -50,7 +50,8 @@ CREATE TABLE IF NOT EXISTS "roomie_invitation" (
 CREATE TABLE IF NOT EXISTS "roomie_routine_groups" (
 	"id" serial PRIMARY KEY NOT NULL,
 	"name" varchar NOT NULL,
-	"created_by" varchar NOT NULL
+	"created_by" varchar NOT NULL,
+	"color" char(6)
 );
 --> statement-breakpoint
 CREATE TABLE IF NOT EXISTS "roomie_routine" (

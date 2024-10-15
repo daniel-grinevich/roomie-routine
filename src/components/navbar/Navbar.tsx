@@ -19,13 +19,13 @@ export default async function Navbar() {
           // User is authenticated
           <div className="flex flex-row gap-1">
             <Link href="/api/auth/signout">
-              <button>Sign Out</button>
+              <button className="bg-black text-white p-2">Sign Out</button>
             </Link>
           </div>
         ) : (
           // User is not authenticated
           <Link href="/api/auth/signin">
-            <button>Sign In</button>
+            <button className="bg-black text-white p-2">Sign In</button>
           </Link>
         )}
       </div>

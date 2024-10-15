@@ -1,5 +1,5 @@
 {
-  "id": "61200e2a-aa45-4c6b-acae-bc634169cab1",
+  "id": "1b6dcf9a-d3af-4dbc-b516-88906ada00b9",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -458,6 +458,12 @@
           "type": "varchar",
           "primaryKey": false,
           "notNull": true
+        },
+        "color": {
+          "name": "color",
+          "type": "char(6)",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},

@@ -1,7 +1,7 @@
 "use client";
+
 import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-
 
 async function sendFriendRequest(friendName: string, friendEmail:string, userId:string): Promise<any> {
     const res = await fetch(`/api/friends/request`, {
@@ -30,6 +30,7 @@ export default function AddFriendForm() {
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const { data: session } = useSession();
+
 
   // New touched state variables
   const [isFriendNameTouched, setIsFriendNameTouched] = useState(false);
@@ -63,6 +64,28 @@ export default function AddFriendForm() {
       }
     }
   }, [friendName, isFriendNameTouched]);
+
+
+  useEffect(() => {
+    const ws = new WebSocket('ws://localhost:3000');
+
+    ws.onopen = () => {
+      console.log('Connected to the WebSocket server');
+    };
+
+    ws.onmessage = (event) => {
+      console.log('Message received:', event.data);
+      setReceivedMessages((prevMessages) => [...prevMessages, event.data]);
+    };
+
+    ws.onclose = () => {
+      console.log('Disconnected from the WebSocket server');
+    };
+
+    return () => {
+      ws.close();
+    };
+  }, []);
 
   const fetchSuggestions = async (name: string) => {
     // Simulate fetching name suggestions (e.g., from an API)
@@ -103,7 +126,7 @@ export default function AddFriendForm() {
       return;
     }
 
-    try {
+    try {      
       const response = await sendFriendRequest(
         friendName,
         friendEmail,
@@ -111,6 +134,7 @@ export default function AddFriendForm() {
       );
       if (response.success) {
         setSuccessMessage(response.message);
+        
         // Optionally reset the form
         setFriendName("");
         setFriendEmail("");

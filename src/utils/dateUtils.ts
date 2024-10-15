@@ -1,6 +1,3 @@
-import { SelectRoutine } from "@/db/schema";
-
-
 export interface IntervalMap {
     [unit: string]: number;  // Mapping of units to their equivalent in days
 }
@@ -12,6 +9,10 @@ const intervalMap: IntervalMap =  {
 };
 
 export const calculateDayDifference = (dateX: Date, dateY: Date): number => {
+  //if dateX is not a date turn it into a date
+  if (!(dateX instanceof Date)) {
+    dateX = new Date(dateX);
+  }
   let delta = dateX.getTime() - dateY.getTime();
   delta = Math.round(delta / (1000 * 3600 * 24));
   return delta

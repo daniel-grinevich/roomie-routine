@@ -1,13 +1,34 @@
-import { routineGroups, routines, SelectGroup, SelectRoutine } from '@/server/db/schema'; // Import your schema
-import { db } from '@/server/db/index'; // Import your database connection
-import RoutineCard from '@/components/routineCard/RoutineCard';
-import { calculateDayDifference } from '@/utils/dateUtils'
-import { getServerAuthSession } from "@/server/auth";
-import { eq, inArray } from 'drizzle-orm';
 
+
+
+import { getServerAuthSession } from "@/server/auth";
+import { routines, routineGroups, users, groupUsers, groupsToRoutines} from "@/server/db/schema";
+import { calculateDayDifference } from '@/utils/dateUtils';
+import { db } from "@/server/db";
+import { eq, or } from 'drizzle-orm';
+import { SelectRoutine, SelectGroup } from "@/server/db/schema";
+import HomePage from '@/components/homepage/HomePage';
 
 async function getRoutinesByUser(userId: string): Promise<SelectRoutine[]> {
-  const res = await db.select().from(routines).where(eq(routines.createdBy, userId));
+  const res = await db
+    .selectDistinctOn([routines.id], 
+      {
+        id: routines.id,
+        name: routines.name,
+        description: routines.description,
+        intervalValue: routines.intervalValue,
+        intervalUnit: routines.intervalUnit,
+        assignedTo: routines.assignedTo,
+        createdBy: routines.createdBy,
+        createdAt: routines.createdAt,
+        resetAt: routines.resetAt,
+        lastToDoIt: routines.lastToDoIt,
+      }
+    )
+    .from(groupUsers)
+    .innerJoin(groupsToRoutines, eq(groupUsers.groupId, groupsToRoutines.groupId))
+    .innerJoin(routines, eq(groupsToRoutines.routineId, routines.id));
+
   return res;
 }
 
@@ -16,57 +37,29 @@ async function getGroupsByUser(userId: string): Promise<SelectGroup[]> {
   return res;
 }
 
+async function getUserName(userId: string): Promise<any> {
+  const res = await db.select().from(users).where(eq(users.id, userId));
+  console.log(res);
+  return res;
+}
 
-
-
-// async function getGroupsByRoutines(routineList: SelectRoutine[]): Promise<SelectGroup[]> {
-//   const routineIds = routineList.map(routine => routine.id); // Extract routine IDs from the list
-//   const res = await db.selectDistinct()
-//                     .from(groupRoutines)
-//                     .leftJoin(routines, eq(groupRoutines.groupId, routines.id))
-//                     .leftJoin(groups, eq(groups.id, groupRoutines.groupId))
-//                     .where(inArray(routines.id, routineIds)); // Use inQuery to check if routines.id is in routineIds
-//   return res;
-// }
-
-
-export default async function HomePage() {
+export default async function Page() {
   const session = await getServerAuthSession();
 
-  const routineList = await getRoutinesByUser(session?.user?.id || '');
-  const userCreatedGroupList = await getGroupsByUser(session?.user?.id || '');
+  if (!session) {
+    return <div>You must be signed in to view this page.</div>;
+  }
 
-  // const groupList = await getGroupsByRoutines(routineList);
+  const userId = session.user.id;
+  const routineList = await getRoutinesByUser(userId);
+  const userCreatedGroupList = await getGroupsByUser(userId);
 
-  const routineListWithDaysLeft = routineList.map((routine) => {
+  // Preprocessing: Calculate days left for routines
+  const routineListWithDaysLeft =  routineList.map((routine) => {
     const daysLeft = calculateDayDifference(routine.resetAt, new Date());
     return { ...routine, daysLeft };
   });
 
-  if (!session) {
-    // You can redirect to the sign-in page or show a message
-    return <div>You must be signed in to view this page.</div>;
-  }
-
-
-  return (
-    <div id="container" className="mx-auto max-w-7xl">
-      <div className="border border-black p-4">
-        <h1 className="text-5xl">Routines</h1>
-      </div>
-      <div id="routine-group-container" className="flex flex-row gap-4 mt-4">
-        <div className='border border-black p-4 w-fit bg-black text-white'>
-          <h2 className="text-sm">All</h2>
-        </div>
-        {userCreatedGroupList.map((group) => (
-          <div>{group.name}</div>
-        ))}
-      </div>
-      <div id="mainContent" className="grid gap-4 my-4 grid-cols-[repeat(auto-fill,minmax(200px,1fr))]">
-        {routineListWithDaysLeft.map((routine) => (
-            <RoutineCard key={routine.id} routine={routine} daysLeft={routine.daysLeft} />
-        ))}
-      </div>
-    </div>
-  );
+  // Pass the fetched data as props to the client component
+  return <HomePage routineList={routineListWithDaysLeft} userCreatedGroupList={userCreatedGroupList} />;
 }
