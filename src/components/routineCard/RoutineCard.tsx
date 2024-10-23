@@ -9,7 +9,8 @@ import Link from "next/link";
 interface RoutineProp {
   routine: SelectRoutine;
   daysLeft: number;
-  onClick: () => void;
+  onClick: (e: React.MouseEvent<HTMLDivElement>) => void;
+  isSelected: boolean;
 }
 
 export default function RoutineCard({ routine, daysLeft, onClick, isSelected }: RoutineProp) {

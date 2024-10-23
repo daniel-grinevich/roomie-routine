@@ -23,8 +23,8 @@ async function sendFriendRequest(friendName: string, friendEmail:string, userId:
 export default function AddFriendForm() {
   const [friendName, setFriendName] = useState("");
   const [friendEmail, setFriendEmail] = useState("");
-  const [nameError, setNameError] = useState(null);
-  const [emailError, setEmailError] = useState(null);
+  const [nameError, setNameError] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
   const [generalError, setGeneralError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [suggestions, setSuggestions] = useState<string[]>([]);
@@ -65,27 +65,6 @@ export default function AddFriendForm() {
     }
   }, [friendName, isFriendNameTouched]);
 
-
-  useEffect(() => {
-    const ws = new WebSocket('ws://localhost:3000');
-
-    ws.onopen = () => {
-      console.log('Connected to the WebSocket server');
-    };
-
-    ws.onmessage = (event) => {
-      console.log('Message received:', event.data);
-      setReceivedMessages((prevMessages) => [...prevMessages, event.data]);
-    };
-
-    ws.onclose = () => {
-      console.log('Disconnected from the WebSocket server');
-    };
-
-    return () => {
-      ws.close();
-    };
-  }, []);
 
   const fetchSuggestions = async (name: string) => {
     // Simulate fetching name suggestions (e.g., from an API)

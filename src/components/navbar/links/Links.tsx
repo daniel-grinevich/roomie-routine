@@ -4,7 +4,8 @@ export default async function Links() {
     const links = [
         { name: 'Home', path: '/' },
         { name: 'Profile', path: '/profile' },
-        { name: 'Create Routine', path: '/routine/new' },
+        { name: 'Routines', path: '/routine/new' },
+        { name: 'Groups', path: '/group' },
     ];
 
 

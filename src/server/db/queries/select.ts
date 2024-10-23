@@ -27,6 +27,16 @@ export async function getRoutinesByUser(userId:string): Promise<SelectRoutine[]>
   }
 }
 
+export async function getRoutine(id:number): Promise<SelectRoutine> {
+  try {
+    const result = await db.select().from(routines).where(eq(routines.id, id));
+    return result[0];
+  } catch (error) {
+    console.error('Error fetching routine by id: ', error);
+    throw error;
+  }
+}
+
 export async function getRoutinesByGroup(groupId:number, groupName:string): Promise<SelectRoutine[]> {
   try {
     const result = await db
@@ -120,6 +130,21 @@ export async function getUserGroups(userId: string): Promise<SelectGroup[]> {
     console.error("Error when fetching user's groups", error);
     throw error;
   }
+}
+
+export async function getGroupsById(groupId: number): Promise<SelectGroup> {
+  let res: SelectGroup[]
+  try {
+    res = await db
+      .select()
+      .from(routineGroups)
+      .where(eq(routineGroups.id, groupId));
+  }
+  catch(error) {
+    console.error("Error when fetching group", error);
+    throw error;
+  }
+  return res[0];
 }
 
 export async function getUsersPendingFriendRequests(userId: string): Promise<SelectFriendRequest[]> {

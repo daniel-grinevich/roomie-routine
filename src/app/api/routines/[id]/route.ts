@@ -3,6 +3,23 @@ import { routines, SelectRoutine, users } from '@/server/db/schema';
 import { updateRoutine } from '@/server/db/queries/update';
 import { db } from '@/server/db';
 import { start } from 'repl';
+import { deleteRoutine } from '@/server/db/queries/delete';
+import { getRoutine } from '@/server/db/queries/select';
+
+export async function GET(request: Request, { params }: { params: { id: number } }) {
+  const id = params.id;
+  try {
+    const routine = await getRoutine(id);
+    return NextResponse.json(routine);
+  } catch (error) {
+    return new Response(JSON.stringify({ error: 'Failed to get routine', details: error.message }), {
+      status: 500,
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+  }
+}
 
 export async function PUT(request: Request) {
   // Parse the JSON body from the request
@@ -29,4 +46,16 @@ export async function PUT(request: Request) {
       },
     });
   }
+}
+
+export async function DELETE(request: Request, { params }: { params: { id: number } }) {
+  const id = params.id;
+
+  try {
+    await deleteRoutine(id);
+  }
+  catch (error) {
+    console.error('Error deleting routine: ', error);
+  }
+
 }

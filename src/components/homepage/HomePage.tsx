@@ -21,6 +21,21 @@ const getRoutinesByGroup = async (groupId: number, groupName: string): Promise<S
     return data.routines;
 };
 
+const addRoutineToGroup = async (groupId: number, routineId: number) => {
+    const res = await fetch(`/api/groups/${groupId}/routines`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ routineId })
+    });
+
+    if (!res.ok) {
+        throw new Error('Failed to add routine to group');
+    }
+    return res.json();
+};
+
 export default function HomePage({ routineList, userCreatedGroupList }: HomePageProps) {
 
     const [groupId, setGroupId] = useState<number | null>(null);
@@ -64,7 +79,7 @@ export default function HomePage({ routineList, userCreatedGroupList }: HomePage
 
     }
 
-    const handleRoutineCardClick = (event: React.MouseEvent<HTMLDivElement>, routineId: number) => {
+    const handleRoutineCardClick = (event: React.MouseEvent<HTMLDivElement>, routineId: number): void => {
         event.stopPropagation();
         setSelectedRoutine(null);
         setSelectedRoutine(routineId);
@@ -72,12 +87,17 @@ export default function HomePage({ routineList, userCreatedGroupList }: HomePage
     }
 
     // Handle group selection
-    const handleGroupClick = (group: SelectGroup, event: React.MouseEvent<HTMLDivElement>) => {
+    const handleGroupClick = async (group: SelectGroup, event: React.MouseEvent<HTMLDivElement>) => {
         event.stopPropagation(); // Prevent deselection when clicking on group
 
-        setSelectedRoutine(null);
-        setGroupId(group.id);
-        setGroupName(group.name);
+        if (selectedRoutine !== null) {
+            // add routine to group
+            const res = await addRoutineToGroup(group.id, selectedRoutine);
+        }
+        else {
+            setGroupId(group.id);
+            setGroupName(group.name);
+        }
     };
 
     // Handle "All" group selection
