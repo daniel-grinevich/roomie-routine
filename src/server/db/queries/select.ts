@@ -110,18 +110,31 @@ export async function getUsersFriendsList(userId: string): Promise<SelectUser[]>
 
 export async function getUserGroups(userId: string): Promise<SelectGroup[]> {
   try {
-    const userCreatedGroups = await db
-      .select()
+    // Fetch groups created by the user
+    const userCreatedGroups: SelectGroup[] = await db
+      .select({
+        id: routineGroups.id,
+        name: routineGroups.name,
+        createdBy: routineGroups.createdBy,
+        color: routineGroups.color // Include all fields in SelectGroup
+      })
       .from(routineGroups)
       .where(eq(routineGroups.createdBy, userId));
 
-    const userAddedGroups = await db
-      .select({id: routineGroups.id, name: routineGroups.name, createdBy: routineGroups.createdBy })
+    // Fetch groups the user was added to
+    const userAddedGroups: SelectGroup[] = await db
+      .select({
+        id: routineGroups.id,
+        name: routineGroups.name,
+        createdBy: routineGroups.createdBy,
+        color: routineGroups.color // Ensure structure matches SelectGroup
+      })
       .from(groupUsers)
       .innerJoin(routineGroups, eq(groupUsers.groupId, routineGroups.id))
       .where(eq(groupUsers.userId, userId));
 
-    const allGroups: Array<SelectGroup> = [...userCreatedGroups, ...userAddedGroups];
+    // Merge both sets of groups into one array
+    const allGroups: SelectGroup[] = [...userCreatedGroups, ...userAddedGroups];
 
     return allGroups;
 
