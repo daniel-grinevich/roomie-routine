@@ -1,8 +1,5 @@
 import { NextResponse } from 'next/server';
-import { routines, SelectRoutine, users } from '@/server/db/schema';
 import { updateRoutine } from '@/server/db/queries/update';
-import { db } from '@/server/db';
-import { start } from 'repl';
 import { deleteRoutine } from '@/server/db/queries/delete';
 import { getRoutine } from '@/server/db/queries/select';
 
@@ -12,7 +9,7 @@ export async function GET(request: Request, { params }: { params: { id: number }
     const routine = await getRoutine(id);
     return NextResponse.json(routine);
   } catch (error) {
-    return new Response(JSON.stringify({ error: 'Failed to get routine', details: error.message }), {
+    return new Response(JSON.stringify({ error: 'Failed to get routine', details: error }), {
       status: 500,
       headers: {
         'Content-Type': 'application/json',
