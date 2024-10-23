@@ -10,7 +10,7 @@ export async function GET(request: Request, {params}: { params: { groupid: numbe
         return NextResponse.json({ group: res }, { status: 200 });
     }
     catch (error) {
-        return new Response(JSON.stringify({ error: 'Failed to get group', details: error.message }), {
+        return new Response(JSON.stringify({ error: 'Failed to get group', details: error }), {
             status: 500,
             headers: {
                 'Content-Type': 'application/json',
