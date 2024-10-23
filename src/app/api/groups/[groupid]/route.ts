@@ -9,4 +9,12 @@ export async function GET(request: Request, {params}: { params: { groupid: numbe
         const res = await getGroupsById(groupid);
         return NextResponse.json({ group: res }, { status: 200 });
     }
+    catch (error) {
+        return new Response(JSON.stringify({ error: 'Failed to get group', details: error.message }), {
+            status: 500,
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+    }
 }
