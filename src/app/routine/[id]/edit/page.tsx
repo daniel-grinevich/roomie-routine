@@ -2,16 +2,7 @@
 
 import { useState, useEffect} from "react";
 import { useRouter } from 'next/navigation';
-import { SelectRoutine } from "@/server/db/schema";
 
-
-
-// interface RoutineProp {
-//     routine: SelectRoutine;
-//     daysLeft: number;
-//     onClick: (e: React.MouseEvent<HTMLDivElement>) => void;
-//     isSelected: boolean;
-// }
   
 export default function EditRoutinePage({params}: { params: { id: string } }) {
     const [name, setName] = useState('');

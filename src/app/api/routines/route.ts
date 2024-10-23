@@ -10,7 +10,12 @@ export async function POST(request: Request) {
       let startOfDay = new Date();
       startOfDay.setHours(0, 0, 0, 0);
 
-      // Insert the new routine using the fake user's ID
+
+      if (typeof data.name !== 'string') {
+        // cast data.name to string
+        data.name = data.name.toString();
+      }
+
       await db.insert(routines).values({
           name: data.name,
           description: data.description,
@@ -18,8 +23,9 @@ export async function POST(request: Request) {
           intervalUnit: data.intervalUnit,
           createdAt: new Date(),
           resetAt: startOfDay,
-          lastToDoIt: 1, // Using the ID of the newly created fake user
-          assignedTo: 1, // Using the ID of the newly created fake user
+          lastToDoIt: data.createdBy, // Using the ID of the newly created fake user
+          assignedTo: data.createdBy, // Using the ID of the newly created fake user
+          createdBy: data.createdBy,
       });
 
       return NextResponse.json({ message: 'Routine created successfully!' });

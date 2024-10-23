@@ -13,8 +13,8 @@ interface Routine {
   description: string;
   intervalValue: number;
   intervalUnit: string;
-  assignedTo: string | null;
-  createdBy: string;
+  assignedTo: string | null | undefined; // Allow undefined here
+  createdBy: string | null | undefined; // Allow undefined here
   groupId: number | null;
 }
 
@@ -54,13 +54,13 @@ export default function RoutineForm({ groups, friends, user }: { groups: SelectG
   const [name, setName] = useState('');
   const [intervalValue, setIntervalValue] = useState('');
   const [intervalUnit, setIntervalUnit] = useState('days');
-  const [assignedTo, setAssignedTo] = useState<string | null>('Myself');
+  const [assignedTo, setAssignedTo] = useState('Myself');
   const [description, setDescription] = useState('');
   const [groupInput, setGroupInput] = useState('');
   const [filteredGroups, setFilteredGroups] = useState(groups);
   const [filteredFriends, setFilteredFriends] = useState(friends);
   const [selectedGroupId, setSelectedGroupId] = useState<number | null>(null);
-  const [selectedFriendId, setSelectedFriendId] = useState<number | null>(null);
+  const [selectedFriendId, setSelectedFriendId] = useState<string | null>(null); // updated to string
 
   // Handle group input change and filter suggestions
   const handleGroupInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -87,52 +87,52 @@ export default function RoutineForm({ groups, friends, user }: { groups: SelectG
     e.preventDefault();
 
     try {
-        // Determine which group to use (create new if not selected)
-        let groupId = selectedGroupId;
-        console.log("Selected Group ID before creation: ", groupId);
-        
-        // Create a new group if no existing group is selected and there is a group input
-        if (groupId === null && groupInput) {
-            console.log("Creating a new group...");
-            const newGroup: Group = { name: groupInput, createdBy: user };
+      // Determine which group to use (create new if not selected)
+      let groupId = selectedGroupId;
+      console.log("Selected Group ID before creation: ", groupId);
 
-            // Wait for the new group creation
-            const createdGroup = await createNewGroupRequest(newGroup);
-            console.log("New Group Created: ", createdGroup.group);
-            groupId = createdGroup.group.id; // Retrieve the new group ID
-            console.log("New Group ID: ", groupId);
-        }
+      // Create a new group if no existing group is selected and there is a group input
+      if (groupId === null && groupInput) {
+        console.log("Creating a new group...");
+        const newGroup: Group = { name: groupInput, createdBy: user };
 
-        // Ensure the groupId is properly assigned
-        if (!groupId) {
-            console.error("Error: Group ID is not set properly.");
-            return; // Prevent routine creation if no valid group ID
-        }
+        // Wait for the new group creation
+        const createdGroup = await createNewGroupRequest(newGroup);
+        console.log("New Group Created: ", createdGroup.group);
+        groupId = createdGroup.group.id; // Retrieve the new group ID
+        console.log("New Group ID: ", groupId);
+      }
 
-        // Determine who the routine is assigned to
-        const routineAssignedTo = selectedFriendId !== null 
-            ? filteredFriends.find(friend => friend.id === selectedFriendId)?.name 
-            : (assignedTo === 'Myself' ? user : assignedTo);
+      // Ensure the groupId is properly assigned
+      if (!groupId) {
+        console.error("Error: Group ID is not set properly.");
+        return; // Prevent routine creation if no valid group ID
+      }
 
-        // Log the assignment for debugging
-        console.log("Routine will be assigned to: ", routineAssignedTo);
+      // Determine who the routine is assigned to
+      const routineAssignedTo = selectedFriendId !== null
+        ? filteredFriends.find(friend => friend.id === selectedFriendId)?.name
+        : (assignedTo === 'Myself' ? user : assignedTo);
 
-        // Create the routine object
-        const newRoutine: Routine = {
-            name,
-            description,
-            intervalValue: Number(intervalValue),
-            intervalUnit,
-            assignedTo: routineAssignedTo,
-            createdBy: user,
-            groupId: groupId, // Use the groupId from either selection or creation
-        };
+      // Log the assignment for debugging
+      console.log("Routine will be assigned to: ", routineAssignedTo);
 
-        // Submit the new routine
-        const resultRoutines = await createNewRoutineRequest(newRoutine);
-        console.log("New Routine Created: ", resultRoutines);
+      // Create the routine object
+      const newRoutine: Routine = {
+        name,
+        description,
+        intervalValue: Number(intervalValue),
+        intervalUnit,
+        assignedTo: routineAssignedTo,
+        createdBy: user,
+        groupId: groupId, // Use the groupId from either selection or creation
+      };
+
+      // Submit the new routine
+      const resultRoutines = await createNewRoutineRequest(newRoutine);
+      console.log("New Routine Created: ", resultRoutines);
     } catch (error) {
-        console.error("Error in creating routine or group: ", error);
+      console.error("Error in creating routine or group: ", error);
     }
   };
 
@@ -196,14 +196,15 @@ export default function RoutineForm({ groups, friends, user }: { groups: SelectG
             <div className="mt-2 flex flex-col border border-black p-2 gap-4">
               <p className="text-xs text-gray-500">Did you mean?</p>
               <ul>
-                {filteredFriends.map((friend) => (
+              {filteredFriends
+                .filter(friend => friend.name !== null) // Filter out friends with null names
+                .map(friend => (
                   <li
                     key={friend.id}
                     onClick={() => {
-                      setAssignedTo(friend.name);
+                      setAssignedTo(friend.name as string); // Assert it's a string since null is filtered out
                       setSelectedFriendId(friend.id);
                     }}
-                    className="cursor-pointer"
                   >
                     {friend.name}
                   </li>
