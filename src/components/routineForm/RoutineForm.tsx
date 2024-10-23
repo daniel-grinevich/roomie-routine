@@ -202,7 +202,7 @@ export default function RoutineForm({ groups, friends, user }: { groups: SelectG
                   <li
                     key={friend.id}
                     onClick={() => {
-                      setAssignedTo(friend.name as string); // Assert it's a string since null is filtered out
+                      setAssignedTo(friend.name as string); // Assert it's a string since null is filtered out new
                       setSelectedFriendId(friend.id);
                     }}
                   >
