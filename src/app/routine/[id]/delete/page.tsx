@@ -1,11 +1,12 @@
-
+import { db } from "@/server/db";
+import { eq } from "drizzle-orm";
+import { routineGroups } from "@/server/db/schema";
 
 async function deleteGroupById(groupId: number): Promise<void> {
     try {
         // Execute the delete query
         const result = await db
-            .delete()
-            .from(routineGroups)
+            .delete(routineGroups)
             .where(eq(routineGroups.id, groupId));
 
         // Check if any rows were affected
@@ -27,6 +28,6 @@ async function handleDelete(groupId: number) {
         // You might want to redirect or update your UI here after deletion
     } catch (error) {
         // Handle the error (e.g., notify the user)
-        alert(error.message);
+        alert(error);
     }
 }
